@@ -53,26 +53,134 @@ function addPhotos(event) {
     const memoryContainer = document.querySelector('.memory-container');
     const existingPhotos = localStorage.getItem('photos') ? JSON.parse(localStorage.getItem('photos')) : [];
     
+    // 显示上传进度提示
+    showCuteToast('照片上传中...请稍等~');
+    
+    // 计数器跟踪成功上传的照片
+    let successCount = 0;
+    let errorCount = 0;
+    
     // 添加新照片
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const reader = new FileReader();
         
-        reader.onload = function(e) {
-            // 保存照片到localStorage
-            existingPhotos.push(e.target.result);
-            localStorage.setItem('photos', JSON.stringify(existingPhotos));
+        // 检查文件类型
+        if (!file.type.match('image.*')) {
+            errorCount++;
+            continue;
+        }
+        
+        // 检查文件大小，超过3MB需要压缩
+        const needCompression = file.size > 3 * 1024 * 1024;
+        
+        if (needCompression) {
+            // 压缩图片
+            compressImage(file, function(compressedDataUrl) {
+                if (compressedDataUrl) {
+                    // 保存压缩后的照片
+                    existingPhotos.push(compressedDataUrl);
+                    savePhotoAndUpdateUI(existingPhotos, ++successCount, errorCount, files.length);
+                } else {
+                    errorCount++;
+                    updateUploadStatus(successCount, ++errorCount, files.length);
+                }
+            });
+        } else {
+            // 直接读取小图片
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // 保存照片到localStorage
+                existingPhotos.push(e.target.result);
+                savePhotoAndUpdateUI(existingPhotos, ++successCount, errorCount, files.length);
+            };
+            reader.onerror = function() {
+                errorCount++;
+                updateUploadStatus(successCount, ++errorCount, files.length);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+}
+
+// 压缩图片
+function compressImage(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // 创建canvas进行压缩
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
             
-            // 更新界面
-            updatePhotoDisplay();
-            
-            // 如果是最后一张照片，显示上传成功提示
-            if (i === files.length - 1) {
-                showCuteToast(`${files.length}张甜蜜照片上传成功！`);
+            // 计算压缩比例，保持宽高比
+            const maxSize = 1200; // 设置较小的尺寸以减小文件大小
+            if (width > height && width > maxSize) {
+                height = Math.round((height * maxSize) / width);
+                width = maxSize;
+            } else if (height > maxSize) {
+                width = Math.round((width * maxSize) / height);
+                height = maxSize;
             }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // 绘制并压缩图片
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 以较低质量输出为jpeg
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            
+            callback(compressedDataUrl);
         };
-        
-        reader.readAsDataURL(file);
+        img.onerror = function() {
+            callback(null);
+        };
+        img.src = e.target.result;
+    };
+    reader.onerror = function() {
+        callback(null);
+    };
+    reader.readAsDataURL(file);
+}
+
+// 保存照片并更新UI
+function savePhotoAndUpdateUI(photos, successCount, errorCount, totalCount) {
+    try {
+        // 尝试保存到localStorage，考虑存储限制
+        localStorage.setItem('photos', JSON.stringify(photos));
+        // 更新UI显示
+        updatePhotoDisplay();
+        // 更新上传状态
+        updateUploadStatus(successCount, errorCount, totalCount);
+    } catch (e) {
+        // localStorage存储空间可能已满
+        showCuteToast('存储空间已满，请删除一些照片后再试~');
+        console.error('保存照片失败:', e);
+    }
+}
+
+// 更新上传状态
+function updateUploadStatus(success, error, total) {
+    if (success + error === total) {
+        if (error > 0) {
+            showCuteToast(`上传完成，${success}张成功，${error}张失败`);
+        } else {
+            showCuteToast(`${success}张甜蜜照片上传成功！`);
+        }
+    }
+}
+
+// 删除照片功能
+function deletePhoto(index) {
+    const photos = localStorage.getItem('photos') ? JSON.parse(localStorage.getItem('photos')) : [];
+    if (index >= 0 && index < photos.length) {
+        photos.splice(index, 1);
+        localStorage.setItem('photos', JSON.stringify(photos));
+        updatePhotoDisplay();
+        showCuteToast('照片已删除~');
     }
 }
 
@@ -100,7 +208,7 @@ function updatePhotoDisplay() {
         
         // 点击照片放大查看
         img.addEventListener('click', function() {
-            showLightbox(photo);
+            showLightbox(photo, index);
         });
         
         memoryItem.appendChild(img);
@@ -246,8 +354,8 @@ function updateCounterWithAnimation(id, newValue) {
     }
 }
 
-// 显示照片灯箱
-function showLightbox(imageSrc) {
+// 显示照片灯箱 - 添加删除按钮
+function showLightbox(imageSrc, index) {
     // 创建灯箱容器
     const lightbox = document.createElement('div');
     lightbox.className = 'lightbox';
@@ -282,14 +390,41 @@ function showLightbox(imageSrc) {
     closeBtn.style.fontSize = '30px';
     closeBtn.style.cursor = 'pointer';
     
+    // 添加删除按钮
+    const deleteBtn = document.createElement('div');
+    deleteBtn.textContent = '删除照片';
+    deleteBtn.style.position = 'absolute';
+    deleteBtn.style.bottom = '20px';
+    deleteBtn.style.right = '20px';
+    deleteBtn.style.color = 'white';
+    deleteBtn.style.background = '#ff4d6d';
+    deleteBtn.style.padding = '8px 15px';
+    deleteBtn.style.borderRadius = '20px';
+    deleteBtn.style.cursor = 'pointer';
+    
+    // 点击删除按钮
+    deleteBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (confirm('确定要删除这张照片吗？')) {
+            deletePhoto(index);
+            document.body.removeChild(lightbox);
+        }
+    });
+    
     // 点击关闭灯箱
     lightbox.addEventListener('click', function() {
         document.body.removeChild(lightbox);
     });
     
+    // 阻止图片点击事件冒泡，避免关闭灯箱
+    img.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+    
     // 添加元素到灯箱
     lightbox.appendChild(img);
     lightbox.appendChild(closeBtn);
+    lightbox.appendChild(deleteBtn);
     
     // 添加灯箱到body
     document.body.appendChild(lightbox);
