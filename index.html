@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>520爱你 - 小肉宝专属</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="heart-animation">
+                <div class="heart"></div>
+            </div>
+            <h1>520<span class="highlight">爱你</span>❤️</h1>
+            <h2>我的<span class="nickname">小肉宝</span>，猪猪和肉肉已经在一起<span class="years">828</span>天啦~</h2>
+            <div class="emoji-rain">
+                <span class="emoji">🌸</span>
+                <span class="emoji">💕</span>
+                <span class="emoji">🍭</span>
+                <span class="emoji">🎀</span>
+                <span class="emoji">🧸</span>
+            </div>
+        </header>
+
+        <section class="love-message">
+            <div class="message-card">
+                <p>亲爱的<span class="nickname">小肉宝</span>：</p>
+                <p>828天的陪伴，天天都想粘着肉肉呀~</p>
+                <p>每一次见到你的小酒窝，我的心都会咚咚跳个不停！</p>
+                <p>你是我的软糖、我的奶茶、我的云朵，是我生活里最可爱的小天使~</p>
+                <p class="special-message">我想告诉你，这份爱只增不减，每天起床第一件事就是想到你，每晚睡前最后一个念想也是你。</p>
+                <p class="special-message">和你在一起的每一刻都像是偷到了整个宇宙的糖果，甜到心里最柔软的地方。</p>
+                <p class="promise-message">我的小肉宝，我想和你一起走过春夏秋冬，从828天到8280天，再到82800天...</p>
+                <p class="promise-message">让我们的爱情像星星一样长久，牵着手一直走下去，做彼此最温暖的依靠。</p>
+                <p class="signature">爱你的大笨蛋❤️</p>
+                <div class="cute-elements">
+                    <div class="balloon"></div>
+                    <div class="star"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="future-together">
+            <h3>未来的约定</h3>
+            <div class="promise-container">
+                <div class="promise-item">
+                    <div class="promise-icon">🏠</div>
+                    <div class="promise-text">一起建造温馨的小家</div>
+                </div>
+                <div class="promise-item">
+                    <div class="promise-icon">✈️</div>
+                    <div class="promise-text">携手去看世界的每个角落</div>
+                </div>
+                <div class="promise-item">
+                    <div class="promise-icon">👵👴</div>
+                    <div class="promise-text">一起变老，看夕阳西下</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mini-program">
+            <h3>小肉宝专属关怀</h3>
+            <p>扫一扫，每天都能收到我的宠爱提醒呦~</p>
+            <div class="qrcode-container">
+                <div class="qrcode" id="qrcode">
+                    <!-- 这里是小程序码的位置，稍后会添加上传功能 -->
+                    <div class="qrcode-placeholder">
+                        <p>小程序码</p>
+                        <p>点下方按钮上传哦~</p>
+                    </div>
+                </div>
+                <div class="qrcode-upload">
+                    <label for="qrcode-input">上传小程序码</label>
+                    <input type="file" id="qrcode-input" accept="image/*" onchange="loadQRCode(event)">
+                </div>
+            </div>
+        </section>
+
+        <section class="memories">
+            <h3>和小肉宝的甜蜜时光</h3>
+            <div class="memory-container">
+                <div class="memory-item">
+                    <div class="memory-placeholder">我们的第一张合照</div>
+                </div>
+                <div class="memory-item">
+                    <div class="memory-placeholder">肉宝最可爱的瞬间</div>
+                </div>
+                <div class="memory-item">
+                    <div class="memory-placeholder">一起吃的第一顿火锅</div>
+                </div>
+            </div>
+            <div class="photo-upload">
+                <label for="photo-input">上传甜蜜照片</label>
+                <input type="file" id="photo-input" accept="image/*" multiple onchange="addPhotos(event)">
+            </div>
+        </section>
+
+        <section class="love-counter">
+            <h3>我们已经相爱了</h3>
+            <div class="counter-container">
+                <div class="counter-item">
+                    <div class="counter-value" id="days">0</div>
+                    <div class="counter-label">天</div>
+                </div>
+                <div class="counter-item">
+                    <div class="counter-value" id="hours">0</div>
+                    <div class="counter-label">小时</div>
+                </div>
+                <div class="counter-item">
+                    <div class="counter-value" id="minutes">0</div>
+                    <div class="counter-label">分钟</div>
+                </div>
+                <div class="counter-item">
+                    <div class="counter-value" id="seconds">0</div>
+                    <div class="counter-label">秒</div>
+                </div>
+            </div>
+            <p class="counter-text">在一起啦！每一秒都在增加我们的爱~</p>
+            <p class="forever-text">未来的时光还有无数个美好瞬间，我们一起走过~</p>
+        </section>
+
+        <section class="flying-hearts">
+            <div class="hearts"></div>
+        </section>
+
+        <footer>
+            <p>520快乐！小肉宝，永远爱你鸭 💖</p>
+            <p class="forever-love">从今以后的每一天，我都会加倍珍惜和你在一起的时光</p>
+            <div class="footer-icons">
+                <span class="footer-icon">🍩</span>
+                <span class="footer-icon">🍨</span>
+                <span class="footer-icon">🍓</span>
+                <span class="footer-icon">🧁</span>
+                <span class="footer-icon">🍬</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
